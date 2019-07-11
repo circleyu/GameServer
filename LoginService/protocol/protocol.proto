@@ -1,0 +1,33 @@
+// 撰寫格式是 Proto v3。
+syntax = "proto3";  
+// 生成的程式在 Golang 中將會屬於 `token` 套件。
+package protocol;
+
+// LoginController  定義了一個登入用的服務。
+service LoginController {  
+    // SignIn 會接收 SignInRequest 資料產生token，最終會回傳 SignInResponse
+    rpc SignIn (SignInRequest) returns (SignInResponse) {}
+    
+    // SignOut 會接收 SignOutRequest 資料驗證並產生新的token，最終會回傳 SignOutResponse
+    rpc SignOut (SignOutRequest) returns (SignOutResponse) {}
+}
+
+// SignInRequest 包含了帳號密碼，將會傳送至登入服務並產生token。
+message SignInRequest {  
+    string account = 1;
+    string password = 2;
+}
+
+// SignInResponse 是計算結果，將會回傳給客戶端。
+message SignInResponse {  
+    string token = 1;
+}
+
+// SignOutRequest 包含了當前token。
+message SignOutRequest {  
+    string token = 1;
+}
+
+// SignOutResponse 回應SignOut，無回傳值。
+message SignOutResponse {
+}
