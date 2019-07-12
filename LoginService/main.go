@@ -12,33 +12,23 @@ import (
 
 	protocol "github.com/CircleYu/GameServer/LoginService/protocol"
 	grpclb "github.com/CircleYu/GameServer/etcdv3"
+	token "github.com/CircleYu/GameServer/token"
 	"google.golang.org/grpc"
 )
 
-type server struct{}
-
-func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*protocol.SignInResponse, error) {
-
-	// 包裝成 Protobuf 建構體並回傳。
-	return &protocol.SignInResponse{Token: ""}, nil
-}
-
-func (s *server) SignOut(ctx context.Context, in *protocol.SignOutRequest) (*protocol.SignOutResponse, error) {
-
-	// 包裝成 Protobuf 建構體並回傳。
-	return &protocol.SignOutResponse{}, nil
-}
-
 var (
-	serv = flag.String("service", "login_service", "service name")
-	host = flag.String("host", "localhost", "listening host")
-	port = flag.String("port", "50001", "listening port")
-	reg  = flag.String("reg", "http://localhost:2379", "register etcd address")
+	serv    = flag.String("service", "login_service", "service name")
+	host    = flag.String("host", "localhost", "listening host")
+	port    = flag.String("port", "50001", "listening port")
+	reg     = flag.String("reg", "http://localhost:2379", "register etcd address")
+	keypath = flag.String("keypath", "./hmacKey", "hmac key path")
 )
 
 func main() {
 
 	flag.Parse()
+
+	token.InitHmacKey(*keypath)
 
 	lis, err := net.Listen("tcp", net.JoinHostPort(*host, *port))
 	if err != nil {
@@ -63,4 +53,28 @@ func main() {
 	s := grpc.NewServer()
 	protocol.RegisterLoginControllerServer(s, &server{})
 	s.Serve(lis)
+}
+
+type server struct{}
+
+func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*protocol.SignInResponse, error) {
+
+	// TODO:先驗證帳號密碼是否正確
+	// TODO:再去Redis中檢查是否有對應的玩家資料，如果沒有則去DB中撈出來存入Redis中
+	// TODO:產生下一次用的token，並更新Redis內容
+
+	log.Printf("Login Account：%v", in.Account)
+
+	tokenString, err := token.CreateToken(in.Account)
+
+	log.Printf("Token：%v", tokenString)
+
+	// 包裝成 Protobuf 建構體並回傳。
+	return &protocol.SignInResponse{Token: tokenString}, err
+}
+
+func (s *server) SignOut(ctx context.Context, in *protocol.SignOutRequest) (*protocol.SignOutResponse, error) {
+
+	// 包裝成 Protobuf 建構體並回傳。
+	return &protocol.SignOutResponse{}, nil
 }
