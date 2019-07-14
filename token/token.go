@@ -14,7 +14,7 @@ type myCustomClaims struct {
 	jwt.StandardClaims
 }
 
-func InitHmacKey(keyPath string) {
+func Init(keyPath string) {
 	// Load sample key data
 	if keyData, e := ioutil.ReadFile(keyPath); e == nil {
 		hmacSecret = keyData
