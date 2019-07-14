@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"net"
 	"os"
@@ -12,30 +11,22 @@ import (
 
 	protocol "github.com/CircleYu/GameServer/LoginService/protocol"
 	grpclb "github.com/CircleYu/GameServer/etcdv3"
+	setting "github.com/CircleYu/GameServer/setting"
 	token "github.com/CircleYu/GameServer/token"
 	"google.golang.org/grpc"
 )
 
-var (
-	serv    = flag.String("service", "login_service", "service name")
-	host    = flag.String("host", "localhost", "listening host")
-	port    = flag.String("port", "50001", "listening port")
-	reg     = flag.String("reg", "http://localhost:2379", "register etcd address")
-	keypath = flag.String("keypath", "./hmacKey", "hmac key path")
-)
-
 func main() {
 
-	flag.Parse()
+	setting.Init()
+	token.Init(setting.HmacKeyPath())
 
-	token.InitHmacKey(*keypath)
-
-	lis, err := net.Listen("tcp", net.JoinHostPort(*host, *port))
+	lis, err := net.Listen("tcp", net.JoinHostPort(setting.Host(), setting.Port()))
 	if err != nil {
 		panic(err)
 	}
 
-	err = grpclb.Register(*reg, *serv, *host, *port, time.Second*10, 15)
+	err = grpclb.Register(setting.RegisterServer(), setting.ServiceName(), setting.Host(), setting.Port(), time.Second*10, 15)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +40,7 @@ func main() {
 		os.Exit(1)
 	}()
 
-	log.Printf("starting login service at %s", *port)
+	log.Printf("starting login service at %s", setting.Port())
 	s := grpc.NewServer()
 	protocol.RegisterLoginControllerServer(s, &server{})
 	s.Serve(lis)
