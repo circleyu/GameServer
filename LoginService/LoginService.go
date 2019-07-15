@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"encoding/json"
 	"net"
 	"os"
 	"os/signal"
@@ -13,34 +13,45 @@ import (
 	grpclb "github.com/CircleYu/GameServer/etcdv3"
 	setting "github.com/CircleYu/GameServer/setting"
 	token "github.com/CircleYu/GameServer/token"
+	"github.com/apsdehal/go-logger"
 	"google.golang.org/grpc"
 )
 
-func main() {
+var log *logger.Logger
 
+func init() {
 	setting.Init()
 	token.Init(setting.HmacKeyPath())
+}
+
+func main() {
+
+	log, closeFunc, err := setting.CreateLogger("LoginService")
+	if err != nil {
+		panic(err) // Check for error
+	}
+	defer closeFunc()
 
 	lis, err := net.Listen("tcp", net.JoinHostPort(setting.Host(), setting.Port()))
 	if err != nil {
-		panic(err)
+		log.PanicF("%v", err)
 	}
 
 	err = grpclb.Register(setting.RegisterServer(), setting.ServiceName(), setting.Host(), setting.Port(), time.Second*10, 15)
 	if err != nil {
-		panic(err)
+		log.FatalF("%v", err)
 	}
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
 	go func() {
 		s := <-ch
-		log.Printf("receive signal '%v'", s)
+		log.Infof("receive signal '%v'", s)
 		grpclb.UnRegister()
 		os.Exit(1)
 	}()
 
-	log.Printf("starting login service at %s", setting.Port())
+	log.Infof("starting login service at %s", setting.Port())
 	s := grpc.NewServer()
 	protocol.RegisterLoginControllerServer(s, &server{})
 	s.Serve(lis)
@@ -48,20 +59,47 @@ func main() {
 
 type server struct{}
 
+type signInData struct {
+	Account  string
+	Password string
+}
+
+type signInReturnData struct {
+	Token string
+}
+
 func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*protocol.SignInResponse, error) {
+
+	var jsonBlob = []byte(in.Data)
+
+	var data signInData
+	err := json.Unmarshal(jsonBlob, &data)
+	if err != nil {
+		log.ErrorF("error:%v", err)
+		return &protocol.SignInResponse{}, err
+	}
+
+	log.Infof("Login Account：%v", data.Account)
 
 	// TODO:先驗證帳號密碼是否正確
 	// TODO:再去Redis中檢查是否有對應的玩家資料，如果沒有則去DB中撈出來存入Redis中
 	// TODO:產生下一次用的token，並更新Redis內容
 
-	log.Printf("Login Account：%v", in.Account)
+	tokenString, err := token.CreateToken(data.Account)
 
-	tokenString, err := token.CreateToken(in.Account)
+	log.Infof("Token：%v", tokenString)
 
-	log.Printf("Token：%v", tokenString)
+	returnData := signInReturnData{
+		Token: tokenString,
+	}
 
+	returnJSON, err := json.Marshal(returnData)
+	if err != nil {
+		log.ErrorF("error:%v", err)
+		return &protocol.SignInResponse{}, err
+	}
 	// 包裝成 Protobuf 建構體並回傳。
-	return &protocol.SignInResponse{Token: tokenString}, err
+	return &protocol.SignInResponse{Data: string(returnJSON)}, err
 }
 
 func (s *server) SignOut(ctx context.Context, in *protocol.SignOutRequest) (*protocol.SignOutResponse, error) {
