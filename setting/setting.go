@@ -18,7 +18,7 @@ var registerServer = "http://localhost:2379"
 var hmacKeyPath = "./hmacKey"
 var logPath = "./Logs"
 
-func Init() {
+func init() {
 
 	f, err := os.Open("./setting.config")
 	if err != nil {

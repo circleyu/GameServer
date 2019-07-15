@@ -20,7 +20,6 @@ import (
 var log *logger.Logger
 
 func init() {
-	setting.Init()
 	token.Init(setting.HmacKeyPath())
 }
 
