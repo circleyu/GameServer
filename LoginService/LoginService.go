@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -18,17 +19,31 @@ import (
 )
 
 var log *logger.Logger
+var closeFunc func()
 
 func init() {
 	token.Init(setting.HmacKeyPath())
+
+	file, err := os.OpenFile(setting.GetLogPath(), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	log, err = logger.New("LoginService", 0, file)
+	if err != nil {
+		panic(err) // Check for error
+	}
+
+	// Show warning with format message
+	log.SetFormat("[%{time}] [%{level}] [%{module}] %{message} (in %{filename}:%{line})")
+
+	closeFunc = func() {
+		file.Close()
+	}
 }
 
 func main() {
 
-	log, closeFunc, err := setting.CreateLogger("LoginService")
-	if err != nil {
-		panic(err) // Check for error
-	}
 	defer closeFunc()
 
 	lis, err := net.Listen("tcp", net.JoinHostPort(setting.Host(), setting.Port()))
@@ -51,6 +66,7 @@ func main() {
 	}()
 
 	log.Infof("starting login service at %s", setting.Port())
+	fmt.Printf("starting login service at %s", setting.Port())
 	s := grpc.NewServer()
 	protocol.RegisterLoginControllerServer(s, &server{})
 	s.Serve(lis)

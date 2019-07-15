@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/antchfx/xmlquery"
-	"github.com/apsdehal/go-logger"
 )
 
 var configuration *xmlquery.Node
@@ -70,7 +69,7 @@ func HmacKeyPath() string {
 	return hmacKeyPath
 }
 
-func CreateLogger(moduleName string) (*logger.Logger, func(), error) {
+func GetLogPath() string {
 	_, err := os.Stat(logPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -81,20 +80,5 @@ func CreateLogger(moduleName string) (*logger.Logger, func(), error) {
 		}
 	}
 
-	logFilePath := fmt.Sprintf("%v/%v.log", logPath, time.Now().Format("20060102150405"))
-
-	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		panic(err)
-	}
-
-	log, err := logger.New(moduleName, 0, file)
-	if err != nil {
-		panic(err) // Check for error
-	}
-
-	// Show warning with format message
-	log.SetFormat("[%{time}] [%{level}] [%{module}] %{message} (in %{filename}:%{line})")
-
-	return log, func() { file.Close() }, err
+	return fmt.Sprintf("%v/%v.log", logPath, time.Now().Format("20060102150405"))
 }
