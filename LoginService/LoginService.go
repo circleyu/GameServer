@@ -7,14 +7,18 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	protocol "github.com/CircleYu/GameServer/LoginService/protocol"
+	db "github.com/CircleYu/GameServer/database"
 	grpclb "github.com/CircleYu/GameServer/etcdv3"
 	setting "github.com/CircleYu/GameServer/setting"
 	token "github.com/CircleYu/GameServer/token"
 	"github.com/apsdehal/go-logger"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc"
 )
 
@@ -49,6 +53,7 @@ func init() {
 func main() {
 
 	defer closeFunc()
+	defer db.Disconnect()
 
 	lis, err := net.Listen("tcp", net.JoinHostPort(setting.Host(), setting.Port()))
 	if err != nil {
@@ -91,22 +96,62 @@ type signInReturnData struct {
 	Token string
 }
 
+type User struct {
+	ID       primitive.ObjectID "_id,omitempty"
+	Account  string
+	Password string
+}
+
+type CustomError struct {
+	msg string
+}
+
+func (error *CustomError) Error() string {
+	return error.msg
+}
+
 func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*protocol.SignInResponse, error) {
 
+	if in.Data == nil {
+		myErr := CustomError{"參數錯誤"}
+		log.Error(myErr.Error())
+		return &protocol.SignInResponse{Data: nil}, &myErr
+	}
 	var data signInData
 	err := json.Unmarshal(in.Data, &data)
 	if err != nil {
-		log.ErrorF("error:%v", err)
+		log.Error(err.Error())
 		return &protocol.SignInResponse{Data: nil}, err
 	}
 
 	log.Infof("Login Account：%v", data.Account)
 
-	// TODO:先驗證帳號密碼是否正確
+	// 先驗證帳號密碼是否正確
+	var user User
+	result := db.FindOne(bson.M{"account": data.Account})
+	if err = result.Decode(&user); err == nil {
+		if strings.Compare(user.Password, data.Password) != 0 {
+			// 密碼錯誤
+			myErr := CustomError{"密碼錯誤"}
+			log.Error(myErr.Error())
+			return &protocol.SignInResponse{Data: nil}, &myErr
+		}
+	} else {
+		// 沒有資料就塞進去
+		user = User{
+			Account:  data.Account,
+			Password: data.Password,
+		}
+		if _, err = db.InsertOne(user); err != nil {
+			//寫入DB錯誤
+			log.Error(err.Error())
+			return &protocol.SignInResponse{Data: nil}, err
+		}
+	}
 	// TODO:再去Redis中檢查是否有對應的玩家資料，如果沒有則去DB中撈出來存入Redis中
 	// TODO:產生下一次用的token，並更新Redis內容
 
-	tokenString, err := token.CreateToken(data.Account)
+	tokenString, err := token.CreateToken(user.Account)
 
 	log.Infof("Token：%v", tokenString)
 
@@ -116,7 +161,7 @@ func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*proto
 
 	returnBytes, err := json.Marshal(returnData)
 	if err != nil {
-		log.ErrorF("error:%v", err)
+		log.Error(err.Error())
 		return &protocol.SignInResponse{}, err
 	}
 	// 包裝成 Protobuf 建構體並回傳。
