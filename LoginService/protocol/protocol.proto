@@ -14,17 +14,17 @@ service LoginController {
 
 // data ={Account,Password}
 message SignInRequest {  
-    string data = 1;
+    bytes data = 1;
 }
 
 // data ={Token}
 message SignInResponse {  
-    string data = 1;
+    bytes data = 1;
 }
 
 // data ={Token}
 message SignOutRequest {  
-    string data = 1;
+    bytes data = 1;
 }
 
 message SignOutResponse {

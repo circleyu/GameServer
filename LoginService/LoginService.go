@@ -85,13 +85,11 @@ type signInReturnData struct {
 
 func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*protocol.SignInResponse, error) {
 
-	var jsonBlob = []byte(in.Data)
-
 	var data signInData
-	err := json.Unmarshal(jsonBlob, &data)
+	err := json.Unmarshal(in.Data, &data)
 	if err != nil {
 		log.ErrorF("error:%v", err)
-		return &protocol.SignInResponse{}, err
+		return &protocol.SignInResponse{Data: nil}, err
 	}
 
 	log.Infof("Login Account：%v", data.Account)
@@ -108,13 +106,13 @@ func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*proto
 		Token: tokenString,
 	}
 
-	returnJSON, err := json.Marshal(returnData)
+	returnBytes, err := json.Marshal(returnData)
 	if err != nil {
 		log.ErrorF("error:%v", err)
 		return &protocol.SignInResponse{}, err
 	}
 	// 包裝成 Protobuf 建構體並回傳。
-	return &protocol.SignInResponse{Data: string(returnJSON)}, err
+	return &protocol.SignInResponse{Data: returnBytes}, err
 }
 
 func (s *server) SignOut(ctx context.Context, in *protocol.SignOutRequest) (*protocol.SignOutResponse, error) {

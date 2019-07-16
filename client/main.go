@@ -59,15 +59,13 @@ func main() {
 	}
 	// 傳送新請求到遠端 gRPC 伺服器 Calculator 中，並呼叫 Plus 函式，讓兩個數字相加。
 	log.Printf("發送請求....")
-	tokenResp, err := c.SignIn(context.Background(), &protocol.SignInRequest{Data: string(jsanData)})
+	tokenResp, err := c.SignIn(context.Background(), &protocol.SignInRequest{Data: jsanData})
 	if err != nil {
 		log.Fatalf("無法執行 SignIn 函式：%v", err)
 	}
 
-	var jsonBlob = []byte(tokenResp.Data)
-
 	var returnData signInReturnData
-	err = json.Unmarshal(jsonBlob, &returnData)
+	err = json.Unmarshal(tokenResp.Data, &returnData)
 	if err != nil {
 		log.Printf("error:%v", err)
 	}
