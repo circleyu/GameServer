@@ -22,24 +22,28 @@ var log *logger.Logger
 var closeFunc func()
 
 func init() {
-	token.Init(setting.HmacKeyPath())
 
-	file, err := os.OpenFile(setting.GetLogPath(), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		panic(err)
+	var err error
+	if setting.Log2Files() {
+		file, err := os.OpenFile(setting.GetLogPath(), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			panic(err)
+		}
+
+		closeFunc = func() {
+			file.Close()
+		}
+		log, err = logger.New("LoginService", 0, file)
+	} else {
+		log, err = logger.New("LoginService", 1)
 	}
 
-	log, err = logger.New("LoginService", 0, file)
 	if err != nil {
 		panic(err) // Check for error
 	}
 
 	// Show warning with format message
 	log.SetFormat("[%{time}] [%{level}] [%{module}] %{message} (in %{filename}:%{line})")
-
-	closeFunc = func() {
-		file.Close()
-	}
 }
 
 func main() {
@@ -66,7 +70,11 @@ func main() {
 	}()
 
 	log.Infof("starting login service at %s", setting.Port())
-	fmt.Printf("starting login service at %s", setting.Port())
+
+	if setting.Log2Files() {
+		fmt.Printf("starting login service at %s", setting.Port())
+	}
+
 	s := grpc.NewServer()
 	protocol.RegisterLoginControllerServer(s, &server{})
 	s.Serve(lis)

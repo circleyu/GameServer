@@ -3,6 +3,7 @@ package setting
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/antchfx/xmlquery"
@@ -16,6 +17,11 @@ var port = "50001"
 var registerServer = "http://localhost:2379"
 var hmacKeyPath = "./hmacKey"
 var logPath = "./Logs"
+var log2Files = false
+var dbServer = "localhost"
+var dbPort = "27017"
+var dbUser = "root"
+var dbPassword = "123456"
 
 func init() {
 
@@ -47,6 +53,24 @@ func init() {
 	if n := configuration.SelectElement("LogPath"); n != nil {
 		logPath = n.InnerText()
 	}
+	if n := configuration.SelectElement("Log2Files"); n != nil {
+		b, err := strconv.ParseBool(n.InnerText())
+		if err == nil {
+			log2Files = b
+		}
+	}
+	if n := configuration.SelectElement("DBServer"); n != nil {
+		dbServer = n.InnerText()
+	}
+	if n := configuration.SelectElement("DBPort"); n != nil {
+		dbPort = n.InnerText()
+	}
+	if n := configuration.SelectElement("DBUser"); n != nil {
+		dbUser = n.InnerText()
+	}
+	if n := configuration.SelectElement("DBPassword"); n != nil {
+		dbPassword = n.InnerText()
+	}
 }
 
 func ServiceName() string {
@@ -67,6 +91,26 @@ func RegisterServer() string {
 
 func HmacKeyPath() string {
 	return hmacKeyPath
+}
+
+func Log2Files() bool {
+	return log2Files
+}
+
+func DBServer() string {
+	return dbServer
+}
+
+func DBPort() string {
+	return dbPort
+}
+
+func DBUser() string {
+	return dbUser
+}
+
+func DBPassword() string {
+	return dbPassword
 }
 
 func GetLogPath() string {
