@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"time"
 
+	setting "github.com/CircleYu/GameServer/setting"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -14,9 +15,9 @@ type myCustomClaims struct {
 	jwt.StandardClaims
 }
 
-func Init(keyPath string) {
+func init() {
 	// Load sample key data
-	if keyData, e := ioutil.ReadFile(keyPath); e == nil {
+	if keyData, e := ioutil.ReadFile(setting.HmacKeyPath()); e == nil {
 		hmacSecret = keyData
 	} else {
 		panic(e)

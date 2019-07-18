@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"time"
@@ -17,6 +18,15 @@ var (
 	svc = flag.String("service", "login_service", "service name")
 	reg = flag.String("reg", "http://localhost:2379", "register etcd address")
 )
+
+type signInData struct {
+	Account  string
+	Password string
+}
+
+type signInReturnData struct {
+	Token string
+}
 
 func main() {
 
@@ -38,22 +48,26 @@ func main() {
 	// 建立新的 Calculator 客戶端，所以等一下就能夠使用 Calculator 的所有方法。
 	c := protocol.NewLoginControllerClient(conn)
 
+	data := signInData{
+		Account:  "circle",
+		Password: "123456",
+	}
+
+	jsanData, err := json.Marshal(data)
+	if err != nil {
+		log.Fatalf("error:%v", err)
+	}
 	// 傳送新請求到遠端 gRPC 伺服器 Calculator 中，並呼叫 Plus 函式，讓兩個數字相加。
 	log.Printf("發送請求....")
-	tokenResp, err := c.SignIn(context.Background(), &protocol.SignInRequest{Account: "circle", Password: "123456"})
+	tokenResp, err := c.SignIn(context.Background(), &protocol.SignInRequest{Data: jsanData})
 	if err != nil {
 		log.Fatalf("無法執行 SignIn 函式：%v", err)
 	}
-	log.Printf("回傳結果：%v", tokenResp.Token)
 
-	/*
-		time.Sleep(16 * 1000 * time.Millisecond)
-
-			// 傳送新請求到遠端 gRPC 伺服器 Calculator 中，並呼叫 Plus 函式，讓兩個數字相加。
-			CheckResp, err := c.Check(context.Background(), &protocol.CheckRequest{Token: tokenResp.Token})
-			if err != nil {
-				log.Fatalf("無法執行 Check 函式：%v", err)
-			}
-			log.Printf("回傳結果：%v", CheckResp.Result)
-	*/
+	var returnData signInReturnData
+	err = json.Unmarshal(tokenResp.Data, &returnData)
+	if err != nil {
+		log.Printf("error:%v", err)
+	}
+	log.Printf("回傳結果：%v", returnData.Token)
 }

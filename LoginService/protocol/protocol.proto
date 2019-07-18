@@ -12,22 +12,20 @@ service LoginController {
     rpc SignOut (SignOutRequest) returns (SignOutResponse) {}
 }
 
-// SignInRequest 包含了帳號密碼，將會傳送至登入服務並產生token。
+// data ={Account,Password}
 message SignInRequest {  
-    string account = 1;
-    string password = 2;
+    bytes data = 1;
 }
 
-// SignInResponse 是計算結果，將會回傳給客戶端。
+// data ={Token}
 message SignInResponse {  
-    string token = 1;
+    bytes data = 1;
 }
 
-// SignOutRequest 包含了當前token。
+// data ={Token}
 message SignOutRequest {  
-    string token = 1;
+    bytes data = 1;
 }
 
-// SignOutResponse 回應SignOut，無回傳值。
 message SignOutResponse {
 }
