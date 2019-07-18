@@ -1,5 +1,7 @@
 # GameServer
 
+Travis CI [![Build Status](https://travis-ci.org/CircleYu/GameServer.svg?branch=master)](https://travis-ci.org/CircleYu/GameServer)
+
 ### 啟動etcd
     docker volume create --name etcd-data
     
