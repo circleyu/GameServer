@@ -1,0 +1,31 @@
+version: '3.1'
+
+services:
+
+  etdc:
+    container_name: etdc
+    image: gcr.io/etcd-development/etcd
+    restart: always
+    volumes:
+      - etcd-data:/etcd-data
+    ports:
+      - "2379:2379" 
+      - "2380:2380"
+    entrypoint:
+      - /usr/local/bin/etcd
+      - --data-dir=/etcd-data
+      - --name
+      - "node1"
+      - --initial-advertise-peer-urls
+      - "http://0.0.0.0:2380"
+      - --listen-peer-urls
+      - "http://0.0.0.0:2380"
+      - --advertise-client-urls
+      -  "http://0.0.0.0:2379"
+      - --listen-client-urls
+      - "http://0.0.0.0:2379"
+      - --initial-cluster
+      - "node1=http://0.0.0.0:2380"
+
+volumes:
+   etcd-data:
