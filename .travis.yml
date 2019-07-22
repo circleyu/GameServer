@@ -4,10 +4,4 @@ language:    # 指明使用的语言
 go: 
   - master   # 默认使用最新版本
 
-before_install:
-  - go get -t -v ./...
-
 script: true
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
