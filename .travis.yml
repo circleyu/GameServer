@@ -4,4 +4,11 @@ language:    # 指明使用的语言
 go: 
   - master   # 默认使用最新版本
 
-script: true      # 执行的脚步，但是go默认会执行下面的这些命令的，所以可以不用写
+before_install:
+  - go get -t -v ./...
+
+script:
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
