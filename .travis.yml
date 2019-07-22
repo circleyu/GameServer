@@ -1,16 +1,7 @@
 language:    # 指明使用的语言
   - go 
 
-sudo: required
-
 go: 
   - master   # 默认使用最新版本
 
-before_install:
-  - go get -t -v ./...
-
-script: 
-  - ./go.test.sh
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+script: true
