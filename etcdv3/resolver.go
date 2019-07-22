@@ -12,7 +12,7 @@ import (
 
 const schema = "etcdv3_resolver"
 
-// Resolver is the implementaion of grpc.resolve.Builder
+// Resolver is the implementation of grpc.resolve.Builder
 type Resolver struct {
 	target  string
 	service string

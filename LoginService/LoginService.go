@@ -38,12 +38,16 @@ func init() {
 			file.Close()
 		}
 		log, err = logger.New("LoginService", 0, file)
+
+		if err != nil {
+			panic(err) // Check for error
+		}
 	} else {
 		log, err = logger.New("LoginService", 1)
-	}
 
-	if err != nil {
-		panic(err) // Check for error
+		if err != nil {
+			panic(err) // Check for error
+		}
 	}
 
 	// Show warning with format message
