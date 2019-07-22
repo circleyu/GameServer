@@ -73,46 +73,57 @@ func init() {
 	}
 }
 
+// ServiceName 獲得server名稱
 func ServiceName() string {
 	return serverName
 }
 
+// Host 獲得主機位置
 func Host() string {
 	return host
 }
 
+// Port 獲得Port
 func Port() string {
 	return port
 }
 
+// RegisterServer 獲得etcd主機位置
 func RegisterServer() string {
 	return registerServer
 }
 
+// HmacKeyPath 獲得HmacKey檔案位置
 func HmacKeyPath() string {
 	return hmacKeyPath
 }
 
+// Log2Files 是否寫入log檔案
 func Log2Files() bool {
 	return log2Files
 }
 
+// DBServer 資料庫位置
 func DBServer() string {
 	return dbServer
 }
 
+// DBPort 資料庫Port
 func DBPort() string {
 	return dbPort
 }
 
+// DBUser 資料庫使用者名稱
 func DBUser() string {
 	return dbUser
 }
 
+// DBPassword 資料庫使用者密碼
 func DBPassword() string {
 	return dbPassword
 }
 
+// GetLogPath log檔案位置
 func GetLogPath() string {
 	_, err := os.Stat(logPath)
 	if err != nil {

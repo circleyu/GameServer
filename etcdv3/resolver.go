@@ -12,7 +12,7 @@ import (
 
 const schema = "etcdv3_resolver"
 
-// resolver is the implementaion of grpc.resolve.Builder
+// Resolver is the implementaion of grpc.resolve.Builder
 type Resolver struct {
 	target  string
 	service string
@@ -32,11 +32,11 @@ func (r *Resolver) Scheme() string {
 	return schema
 }
 
-// ResolveNow
+// ResolveNow ResolveNow
 func (r *Resolver) ResolveNow(rn resolver.ResolveNowOption) {
 }
 
-// Close
+// Close Close
 func (r *Resolver) Close() {
 }
 
