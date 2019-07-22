@@ -23,23 +23,25 @@ func init() {
 	db = client.Database("demo")
 }
 
+// InsertOne 寫入一筆資料
 func InsertOne(data interface{}) (*mongo.InsertOneResult, error) {
 	userColl := db.Collection("user")
 	return userColl.InsertOne(context.Background(), data)
 }
 
+// InsertMany 寫入多筆資料
 func InsertMany(datas []interface{}) (*mongo.InsertManyResult, error) {
 	userColl := db.Collection("user")
 	return userColl.InsertMany(context.Background(), datas)
 }
 
-// 回傳之後自己去處理Decode
+// FindOne 搜尋資料，返回第一筆。回傳之後自己去處理Decode
 func FindOne(condition bson.M) *mongo.SingleResult {
 	userColl := db.Collection("user")
 	return userColl.FindOne(context.Background(), condition)
 }
 
-// 回傳之後自己去處理Decode
+// Find 搜尋多筆資料。回傳之後自己去處理Decode
 func Find(condition bson.M) (*mongo.Cursor, error) {
 	userColl := db.Collection("user")
 	return userColl.Find(context.Background(), condition)
@@ -59,6 +61,7 @@ func Find(condition bson.M) (*mongo.Cursor, error) {
 	*/
 }
 
+// Disconnect 關閉連線
 func Disconnect() {
 	//defer cancel()
 	client.Disconnect(context.Background())
