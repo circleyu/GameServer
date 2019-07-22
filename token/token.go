@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	setting "github.com/CircleYu/GameServer/setting"
+	setting "github.com/circleyu/GameServer/setting"
 	"github.com/dgrijalva/jwt-go"
 )
 

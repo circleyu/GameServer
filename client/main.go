@@ -7,8 +7,8 @@ import (
 	"log"
 	"time"
 
-	protocol "github.com/CircleYu/GameServer/LoginService/protocol"
-	grpclb "github.com/CircleYu/GameServer/etcdv3"
+	protocol "github.com/circleyu/GameServer/LoginService/protocol"
+	grpclb "github.com/circleyu/GameServer/etcdv3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"

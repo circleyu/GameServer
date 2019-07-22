@@ -1,4 +1,4 @@
-module github.com/CircleYu/GameServer
+module github.com/circleyu/GameServer
 
 go 1.12
 
