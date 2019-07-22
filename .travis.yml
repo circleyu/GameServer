@@ -1,7 +1,7 @@
 language:    # 指明使用的语言
   - go 
 
-sudo: true
+sudo: required
 
 go: 
   - master   # 默认使用最新版本
