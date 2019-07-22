@@ -24,6 +24,7 @@ func init() {
 	}
 }
 
+// CreateToken 產生token
 func CreateToken(userName string) (string, error) {
 
 	claims := myCustomClaims{

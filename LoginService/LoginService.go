@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/apsdehal/go-logger"
 	protocol "github.com/circleyu/GameServer/LoginService/protocol"
 	db "github.com/circleyu/GameServer/database"
 	grpclb "github.com/circleyu/GameServer/etcdv3"
 	setting "github.com/circleyu/GameServer/setting"
 	token "github.com/circleyu/GameServer/token"
-	"github.com/apsdehal/go-logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc"
@@ -96,20 +96,24 @@ type signInReturnData struct {
 	Token string
 }
 
+// User 使用者登入資料
 type User struct {
 	ID       primitive.ObjectID "_id,omitempty"
 	Account  string
 	Password string
 }
 
+// CustomError 自定義錯誤
 type CustomError struct {
 	msg string
 }
 
+// Error 錯誤字串
 func (error *CustomError) Error() string {
 	return error.msg
 }
 
+// SignIn 玩家登入
 func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*protocol.SignInResponse, error) {
 
 	if in.Data == nil {
@@ -168,6 +172,7 @@ func (s *server) SignIn(ctx context.Context, in *protocol.SignInRequest) (*proto
 	return &protocol.SignInResponse{Data: returnBytes}, err
 }
 
+// SignOut 玩家登出
 func (s *server) SignOut(ctx context.Context, in *protocol.SignOutRequest) (*protocol.SignOutResponse, error) {
 
 	// 包裝成 Protobuf 建構體並回傳。

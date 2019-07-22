@@ -10,10 +10,10 @@ import (
 	"github.com/coreos/etcd/clientv3"
 )
 
-// Prefix should start and end with no slash
+// Deregister is prefix should start and end with no slash
 var Deregister = make(chan struct{})
 
-// Register
+// Register add service to etcd
 func Register(target, service, host, port string, interval time.Duration, ttl int) error {
 	serviceValue := net.JoinHostPort(host, port)
 	serviceKey := fmt.Sprintf("/%s/%s/%s", schema, service, serviceValue)
