@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	setting "github.com/CircleYu/GameServer/setting"
+	setting "github.com/circleyu/GameServer/setting"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
